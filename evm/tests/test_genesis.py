@@ -15,7 +15,7 @@ class GenesisTests(unittest.TestCase):
             "alloc": {
                 "0x1111111111111111111111111111111111111111": {
                     "balance": "9999", "privateKey": "SHOULD_NOT_SURVIVE"},
-                "0x2222222222222222222222222222222222222": {
+                "0x2222222222222222222222222222222222222222": {
                     "balance": "2", "code": "0x6000", "storage": {}}
             }
         }
