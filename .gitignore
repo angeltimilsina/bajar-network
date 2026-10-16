@@ -3,3 +3,9 @@
 *.key
 *.pem
 node_modules/
+# Developer Quickstart output: generated validator private keys and chain databases
+/evm/.generated/
+/evm/.env
+__pycache__/
+*.pyc
+

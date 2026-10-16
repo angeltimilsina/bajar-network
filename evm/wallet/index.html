@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BAJAR Devnet Wallet</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,system-ui,sans-serif}
+    body{background:#090e1b;color:#f5f7fc;margin:0;min-height:100vh;display:grid;place-items:center}
+    main{width:min(440px,92vw);padding:30px;background:#131b2c;border:1px solid #34425a;border-radius:24px}
+    h1{font-size:26px;margin:0 0 6px}p,small{color:#aebdd5}
+    .eyebrow{letter-spacing:.13em;text-transform:uppercase;font-size:11px;color:#93b7ff}
+    .balance{font-size:35px;letter-spacing:-.04em;margin:18px 0 8px}
+    button{width:100%;border:0;background:#598bfa;color:#071124;padding:13px 15px;border-radius:12px;font-weight:700;margin-top:13px;cursor:pointer}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    input{box-sizing:border-box;width:100%;padding:12px;color:#fff;background:#0a1020;border:1px solid #43506a;border-radius:10px;margin-top:8px}
+    label{display:block;margin-top:15px;font-size:13px;color:#c6d2e8}
+    #status{white-space:pre-wrap;overflow-wrap:anywhere;min-height:20px;font-size:12px}
+    .notice{background:#242038;border-radius:12px;padding:12px;font-size:12px}
+  </style>
+</head>
+<body>
+ <main>
+   <div class="eyebrow">Independent EVM chain · Local only</div>
+   <h1>BAJAR Network</h1>
+   <p>Wallet connection for the four-validator BAJAR QBFT development network.</p>
+   <div class="balance" id="balance">— BAJ</div>
+   <small id="address">Not connected</small>
+   <button id="connect">Connect MetaMask & add BAJAR Devnet</button>
+   <label>Recipient (test address)<input id="recipient" placeholder="0x..."></label>
+   <label>Amount (BAJ)<input id="amount" inputmode="decimal" placeholder="1.0"></label>
+   <button id="send" disabled>Send test BAJ</button>
+   <p id="status" role="status"></p>
+   <p class="notice">Test environment only. Chain ID 131313 · RPC http://127.0.0.1:8545. Never import real-money keys into this demo.</p>
+ </main>
+<script>
+"use strict";
+const chainId = "0x200f1";
+const rpcUrl = "http://127.0.0.1:8545";
+let account = null;
+const $ = id => document.getElementById(id);
+const provider = () => window.ethereum;
+function status(message) { $("status").textContent = String(message); }
+function formatBAJ(value) {
+  const wei=BigInt(value);
+  return (wei/10n**18n).toString()+"."+(wei%10n**18n).toString().padStart(18,"0").slice(0,9);
+}
+function parseBAJ(input) {
+  if(!/^(0|[1-9]\d*)(\.\d{1,18})?$/.test(input)) throw new Error("Enter a positive amount with up to 18 decimals.");
+  const parts=input.split(".");
+  return BigInt(parts[0])*10n**18n + BigInt((parts[1]||"").padEnd(18,"0"));
+}
+async function refresh() {
+  if(!account) return;
+  const balance=await provider().request({method:"eth_getBalance",params:[account,"latest"]});
+  $("balance").textContent = formatBAJ(balance)+" BAJ";
+  $("address").textContent = account;
+}
+$("connect").onclick=async()=>{
+  try {
+    if(!provider()) throw new Error("Install MetaMask or another EIP-1193 compatible wallet.");
+    await provider().request({method:"wallet_addEthereumChain",params:[{
+      chainId, chainName:"BAJAR Devnet (Local)",
+      nativeCurrency:{name:"BAJAR",symbol:"BAJ",decimals:18},
+      rpcUrls:[rpcUrl]
+    }]});
+    await provider().request({method:"wallet_switchEthereumChain",params:[{chainId}]});
+    const accounts=await provider().request({method:"eth_requestAccounts"});
+    if(!accounts.length) throw new Error("No wallet account authorized.");
+    account=accounts[0];
+    $("send").disabled=false;
+    await refresh();
+    status("Connected to BAJAR Devnet. This wallet can sign test transactions.");
+  } catch(err) {status(err.message||String(err));}
+};
+$("send").onclick=async()=>{
+  try {
+    if(!account) throw new Error("Connect a wallet first.");
+    const to=$("recipient").value.trim();
+    if(!/^0x[a-fA-F0-9]{40}$/.test(to)) throw new Error("Enter a valid EVM recipient address.");
+    const value=parseBAJ($("amount").value.trim());
+    if(value<=0n) throw new Error("Amount must exceed zero.");
+    const tx=await provider().request({
+      method:"eth_sendTransaction",params:[{from:account,to,value:"0x"+value.toString(16)}]
+    });
+    status("Submitted test transaction: "+tx+"\nRefresh balance after confirmation.");
+    await refresh();
+  } catch(err) {status(err.message||String(err));}
+};
+if(provider()?.on) {
+  provider().on("accountsChanged", async accounts=>{
+    account=accounts[0]||null;
+    $("send").disabled=!account;
+    if(account) {try{await refresh()}catch(e){status(e.message)}} else {
+      $("address").textContent="Not connected";$("balance").textContent="— BAJ";
+    }
+  });
+  provider().on("chainChanged",()=>{account=null;$("send").disabled=true;status("Network changed. Reconnect BAJAR Devnet.");});
+}
+</script>
+</body>
+</html>
+
