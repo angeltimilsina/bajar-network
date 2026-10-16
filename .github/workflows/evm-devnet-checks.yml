@@ -1,0 +1,25 @@
+name: BAJAR EVM devnet checks
+on:
+  push:
+    paths:
+      - "evm/**"
+      - ".github/workflows/evm-devnet-checks.yml"
+  pull_request:
+    paths:
+      - "evm/**"
+      - ".github/workflows/evm-devnet-checks.yml"
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate shell
+        run: bash -n evm/scripts/start.sh
+      - name: Test genesis generation
+        run: python -m unittest discover -s evm/tests -v
+      - name: Python compilation
+        run: python -m compileall -q evm/scripts
+

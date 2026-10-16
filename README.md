@@ -2,24 +2,31 @@
 
 Experimental independent Layer 1 blockchain development project.
 
-## Architecture goal
-Bajar Framework: Rust ledger, signatures, P2P networking, BFT consensus, deterministic execution, and future smart-contract runtime.
+## Two independent prototypes
 
-BAJAR is intended to be the network's native asset, with a fixed genesis supply of 108,000,000 coins (18 decimals).
+**EVM / QBFT devnet — new:** [Run BAJAR EVM devnet](evm/README.md). A local
+Hyperledger Besu network with four QBFT validators, a JSON-RPC node, a native BAJ
+genesis allocation of **13,000,000,000 BAJ**, and a small browser wallet demo.
+The configuration is development-only and has not been launched publicly.
 
-## Current implementation
-The `bajar-core` crate contains an **experimental in-memory ledger** with Ed25519 signed transfers, nonces, chain-ID replay protection, genesis supply, and deterministic state hashing. It has no network, consensus, persistent database, fee market, or production security review.
+**Rust ledger — existing:** The \`bajar-core\` crate remains an experimental in-memory
+Ed25519 ledger. It has no production consensus, RPC, network or EVM execution.
+Its earlier hardcoded 108,000,000 coin supply is separate from the new EVM devnet
+and should not be interpreted as current BAJAR tokenomics.
 
-## Run tests
-```bash
+## Run Rust tests
+
+\`\`\`bash
 cargo test --workspace
-```
+\`\`\`
 
 ## Next milestones
-1. Persist ledger state and implement canonical transaction encoding.
-2. Integrate a studied BFT consensus engine; implement validator membership and block production.
-3. Add P2P transport, sync, RPC, and four-node devnet.
-4. Implement staking economics, transaction fees, and adversarial testing.
-5. Add audited Wasm smart contracts and stablecoin integrations.
 
-**Warning:** No real BAJAR coins exist on a public network yet. Do not use with real funds.
+- Confirm native BAJ supply, allocation and precision policy for a sovereign L1.
+- Test EVM transfers, contract deployments, validator participation and failure handling.
+- Add independent validator operators and public testnet infrastructure.
+- Complete security, custody, economic and compliance reviews before considering mainnet.
+
+**Warning:** No publicly launched BAJAR blockchain or tradable native coin is
+established by this repository. Do not use the prototypes for real funds.
+
