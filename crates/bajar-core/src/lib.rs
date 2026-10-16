@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
-pub const BAJAR_DECIMALS: u32 = 18;
-pub const GENESIS_SUPPLY: u128 = 108_000_000u128 * 10u128.pow(BAJAR_DECIMALS);
+pub const BAJAR_DECIMALS: u32 = 9;
+pub const GENESIS_SUPPLY: u128 = 13_000_000_000u128 * 10u128.pow(BAJAR_DECIMALS);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Transfer {
@@ -95,6 +95,8 @@ mod tests {
     #[test]
     fn genesis_supply_is_fixed() {
         let ledger = Ledger::genesis([7; 32]);
+        assert_eq!(BAJAR_DECIMALS, 9);
+        assert_eq!(GENESIS_SUPPLY, 13_000_000_000_000_000_000u128);
         assert_eq!(ledger.accounts[&[7; 32]].balance, GENESIS_SUPPLY);
     }
 
